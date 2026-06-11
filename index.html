@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>耳机真伪辨别 · 转转上门回收</title>
+<style>
+:root {
+  --bg: #f2f2f7; --card: #fff; --primary: #007AFF;
+  --green: #34C759; --greenBg: #EEFBF0;
+  --red: #FF3B30; --redBg: #FFF0EF;
+  --orange: #FF9500; --orangeBg: #FFF5E6;
+  --blueBg: #EBF5FF; --text: #1c1c1e; --text2: #3c3c43; --text3: #8e8e93;
+  --sep: #e5e5ea; --radius: 14px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; padding-bottom: 60px; }
+.header { position: sticky; top: 0; z-index: 200; background: rgba(255,255,255,.88); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 14px 20px; border-bottom: .5px solid var(--sep); }
+.header-inner { max-width: 1000px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+.header h1 { font-size: 20px; font-weight: 700; }
+.container { max-width: 1000px; margin: 0 auto; padding: 16px; }
+
+/* Side nav */
+.nav-layout { display: grid; grid-template-columns: 200px 1fr; gap: 16px; align-items: start; }
+@media (max-width: 768px) { .nav-layout { grid-template-columns: 1fr; } }
+.sidebar { position: sticky; top: 80px; background: var(--card); border-radius: var(--radius); box-shadow: 0 2px 12px rgba(0,0,0,.06); overflow: hidden; max-height: calc(100vh - 100px); overflow-y: auto; }
+.sidebar a { display: block; padding: 10px 16px; font-size: 13px; font-weight: 500; color: var(--text2); text-decoration: none; border-bottom: .5px solid var(--sep); transition: .15s; cursor: pointer; }
+.sidebar a:hover, .sidebar a.active { background: var(--blueBg); color: var(--primary); font-weight: 600; }
+.sidebar .cat { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; padding: 10px 16px 4px; letter-spacing: .5px; }
+
+.alert { padding: 12px 16px; border-radius: 10px; margin: 8px 0; font-size: 14px; }
+.alert-warning { background: var(--orangeBg); border: 1px solid #FFDAAF; }
+
+.section-title { font-size: 20px; font-weight: 800; margin: 4px 0 16px; padding-bottom: 8px; border-bottom: 3px solid var(--primary); display: flex; align-items: center; gap: 8px; scroll-margin-top: 80px; }
+
+/* Compare card with images */
+.compare-card { background: var(--card); border-radius: var(--radius); margin-bottom: 16px; box-shadow: 0 2px 12px rgba(0,0,0,.06); overflow: hidden; scroll-margin-top: 80px; }
+.compare-card .card-title { padding: 14px 18px; font-size: 16px; font-weight: 700; border-bottom: .5px solid var(--sep); display: flex; align-items: center; gap: 8px; }
+.compare-body { display: grid; grid-template-columns: 1fr 1fr; }
+@media (max-width: 500px) { .compare-body { grid-template-columns: 1fr; } }
+.compare-col { padding: 12px 16px; }
+.compare-col.genuine { background: var(--greenBg); border-right: .5px solid var(--sep); }
+.compare-col.fake { background: var(--redBg); }
+.compare-col h4 { font-size: 14px; margin-bottom: 6px; }
+.compare-col ul { list-style: none; font-size: 13px; line-height: 1.5; }
+.compare-col ul li { padding: 4px 0; }
+
+/* Image gallery */
+.img-stack { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.img-stack img { width: calc(50% - 3px); max-width: 200px; height: auto; border-radius: 8px; cursor: pointer; border: 2px solid transparent; transition: .2s; object-fit: cover; aspect-ratio: 1; }
+.img-stack img:hover { border-color: var(--primary); transform: scale(1.02); }
+@media (max-width: 500px) { .img-stack img { width: calc(50% - 3px); max-width: 150px; } }
+
+.img-row { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.img-row img { max-height: 200px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; transition: .2s; }
+.img-row img:hover { border-color: var(--primary); }
+
+.img-label { font-size: 10px; color: var(--text3); text-align: center; margin-top: 2px; }
+.img-placeholder { width: calc(50% - 3px); max-width: 200px; aspect-ratio: 1; border-radius: 8px; background: #f0f0f5; display: flex; align-items: center; justify-content: center; flex-direction: column; color: #c7c7cc; font-size: 11px; gap: 4px; }
+.img-placeholder span { font-size: 24px; }
+@media (max-width: 500px) { .img-placeholder { width: calc(50% - 3px); max-width: 150px; } }
+
+/* Lightbox */
+.lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,.92); z-index: 9999; justify-content: center; align-items: center; cursor: pointer; }
+.lightbox.show { display: flex; }
+.lightbox img { max-width: 95%; max-height: 90vh; border-radius: 8px; }
+.lightbox .close-btn { position: fixed; top: 16px; right: 20px; color: #fff; font-size: 32px; cursor: pointer; z-index: 10000; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
+
+/* Checklist */
+.checklist { background: var(--card); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+.checklist h3 { font-size: 15px; margin-bottom: 8px; }
+.check-grid { display: flex; flex-wrap: wrap; gap: 5px; }
+.check-item { padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; background: #f5f5f7; }
+
+.tag { display: inline-block; padding: 2px 7px; border-radius: 5px; font-size: 11px; font-weight: 600; }
+.tag-red { background: var(--redBg); color: #C62828; }
+.tag-green { background: var(--greenBg); color: #1B5E20; }
+
+.search-box { margin-bottom: 14px; }
+.search-box input { width: 100%; padding: 10px 16px; border-radius: 10px; border: 1px solid var(--sep); font-size: 14px; background: var(--card); outline: none; }
+.search-box input:focus { border-color: var(--primary); }
+</style>
+</head>
+<body>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <span class="close-btn">✕</span>
+  <img id="lightboxImg" src="" alt="">
+</div>
+
+<div class="header">
+  <div class="header-inner">
+    <h1>🔬 耳机真伪辨别</h1>
+    <span class="tag tag-red" style="font-size:13px">转转上门回收</span>
+  </div>
+</div>
+
+<div class="container">
+
+<div class="search-box"><input type="text" id="searchBox" placeholder="🔍 搜索辨别要点..." oninput="filterCards()"></div>
+
+<div class="alert alert-warning">
+  <strong>⚠️ 重要提醒：</strong>市面上的山寨 AirPods 分三六九等，部分可在外观、功能、定位、弹窗等方面做到 1:1 复刻；质检时需<strong>综合多方面判断</strong>，不可只凭单一特征下结论。
+</div>
+
+<div class="checklist">
+  <h3>✅ AirPods 真伪重点查看项</h3>
+  <div class="check-grid">
+    <span class="check-item" style="background:#FFF9C4;font-weight:700">🔢 序列号</span>
+    <span class="check-item" style="background:#FFF9C4;font-weight:700">📝 小型号</span>
+    <span class="check-item" style="background:#FFF9C4;font-weight:700">✏️ 字体 & 字迹</span>
+    <span class="check-item" style="background:#FFF9C4;font-weight:700">📦 包装</span>
+    <span class="check-item">💡 指示灯</span><span class="check-item">🔘 按键 & 合页</span>
+    <span class="check-item">🔌 充电接口</span><span class="check-item">🔊 声音 & 降噪</span>
+    <span class="check-item">📲 弹窗</span><span class="check-item">✏️ 修改名称</span>
+    <span class="check-item">👂 入耳检测</span><span class="check-item">🔄 摇晃测试</span>
+  </div>
+</div>
+
+<div class="nav-layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <div id="content"></div>
+</div>
+
+</div>
+
+<script>
+const IMG = '耳机真伪辨别_images';
+const onImgErr = `onerror="this.style.display='none';this.parentElement.innerHTML+='<div class=\\\\'img-placeholder\\\\'><span>🖼️</span>图片待补充</div>'"`;
+
+// --- Data ---
+const TOPICS = [
+  { cat:'🎧 AirPods', id:'ap-check', title:'综合检查清单', text:true,
+    genuine:['市面上的山寨 AirPods 分三六九等，部分可在外观、功能等方面做到 1:1 复刻。质检需综合多方面判断：序列号、小型号、字体&字迹、包装、指示灯、按键&合页、充电接口、声音&降噪、弹窗、修改名称、入耳检测、摇晃测试。'],
+    fake:['不可只凭单一特征判定真伪。重点查看序列号能否通过苹果官网验证；字体是否规整清晰无毛糙锯齿；合页是否为金属材质；降噪效果是否明显。'] },
+
+  { cat:'🎧 AirPods', id:'ap-light', title:'💡 充电盒指示灯', slides:[6,7],
+    genuine:['呼吸灯与外壳贴合，无明显缝隙','不亮时为<strong>灰色</strong>','无凸起凹陷，整体与外壳齐平','指示灯<strong>发光均匀</strong>'],
+    fake:['呼吸灯凸起或凹陷于外壳','类似小珠子，外观圆润','不亮时为<strong>黑色</strong>或呼吸灯缺失','灯光向周围扩散，发光不均匀','部分灯珠偏移'],
+    imgs_gen:['image27.png','image28.png','image29.png','image33.png','image34.png'],
+    imgs_fake:['image30.png','image31.png','image32.png','image35.png','image36.png','image37.png'] },
+
+  { cat:'🎧 AirPods', id:'ap-hinge', title:'🔗 合页（铰链）', slides:[8,9,10],
+    genuine:['磨砂铝金属（银色），做工较好','指甲刮过<strong>不会有痕迹</strong>','可能有氧化但表面<strong>不会掉漆</strong>','边缘缝隙<strong>比较均匀</strong>'],
+    fake:['金属颜色偏灰','可能为<strong>塑料</strong>，指甲刮过有划痕或掉漆','表面<strong>漆面脱落</strong>','边缘间隙差距较大，部分几乎无缝隙'],
+    imgs_gen:['image38.png','image40.png','image44.jpeg','image49.png'],
+    imgs_fake:['image39.png','image41.png','image42.png','image43.png','image45.png','image46.png','image47.png','image48.jpeg','image50.png','image51.png','image52.png'] },
+
+  { cat:'🎧 AirPods', id:'ap-font-case', title:'✏️ 字体字迹 — 充电仓内部', slides:[11,12,13],
+    genuine:['充电仓机身字体<strong>间隙均匀、字迹清晰</strong>','字体大小一致，印刷清晰规整','字体间距均匀'],
+    fake:['机身刻字<strong>毛糙</strong>（粗细不一）','大小不一致','颜色较深','间距不一致','边缘有<strong>锯齿、倾斜、字体割裂</strong>','部分无镌刻'],
+    imgs_gen:['image53.png','image54.png','image66.jpeg','image67.png','image73.png'],
+    imgs_fake:['image55.png','image56.png','image57.png','image58.png','image59.png','image68.png','image69.png','image70.jpeg','image71.jpeg','image72.png'] },
+
+  { cat:'🎧 AirPods', id:'ap-font-ear', title:'✏️ 字体字迹 — 耳机机身', slides:[14,15],
+    genuine:['耳机机身有清晰的<strong>出厂镌刻</strong>，颜色较浅','字体大小一致，印刷清晰规整'],
+    fake:['机身刻字<strong>毛糙</strong>（粗细不一）','大小不一致，颜色较深','间距不一致，边缘有锯齿、倾斜','部分无镌刻'],
+    imgs_gen:['image74.png','image75.png','image78.png'],
+    imgs_fake:['image76.png','image77.png','image79.png','image80.png','image81.png','image82.jpeg','image83.png','image84.jpeg','image85.png'] },
+
+  { cat:'🎧 AirPods', id:'ap-font-back', title:'✏️ 字体字迹 — 背板', slides:[16],
+    genuine:['字体<strong>清晰、规整</strong>，边缘无锯齿'],
+    fake:['字体<strong>模糊、不规整</strong>','边缘有锯齿（字体有割裂）'],
+    imgs_gen:['image86.png','image89.png'],
+    imgs_fake:['image87.jpeg','image88.png','image90.png'] },
+
+  { cat:'🎧 AirPods', id:'ap-btn', title:'🔘 外观 — 按键', slides:[17],
+    genuine:['按压时声音<strong>较闷较小</strong>，无清脆响声','按下去<strong>比较紧实</strong>','按键与充电仓<strong>齐平</strong>'],
+    fake:['按压时<strong>有清脆响声</strong>，声音可能较大','按键<strong>松散</strong>','按键四周有弧边'],
+    note:'⚠ AirPods 4代（两款）无按键',
+    imgs_gen:['image91.jpeg','image92.png'],
+    imgs_fake:['image93.png','image94.png'] },
+
+  { cat:'🎧 AirPods', id:'ap-port', title:'🔌 外观 — 充电接口', slides:[18],
+    genuine:['充电接口边缘<strong>无缝隙</strong>','充电口和外壳<strong>几乎持平</strong>'],
+    fake:['接口边缘<strong>缝隙大</strong>','接口明显凸起或凹陷','部分充电口拔插时明显松动'],
+    imgs_gen:['image95.jpeg'],
+    imgs_fake:['image96.png','image97.png','image98.png'] },
+
+  { cat:'🎧 AirPods', id:'ap-pro2-lanyard', title:'🪢 AirPods Pro 2代 — 挂绳孔', slides:[19],
+    genuine:['材质与合页一样为<strong>金属</strong>','四周与充电仓之间<strong>无缝隙</strong>','与充电仓持平，无凸起凹陷'],
+    fake:['挂绳孔突起/凹陷','四周与充电仓之间有<strong>缝隙</strong>'],
+    imgs_gen:['image99.png'], imgs_fake:['image100.png'] },
+
+  { cat:'🎧 AirPods', id:'ap-pro2-speaker', title:'🔊 AirPods Pro 2代 — 底部扬声器', slides:[20],
+    genuine:['扬声器开孔<strong>圆润</strong>，无毛边或凹陷','<strong>有扬声器网</strong>'],
+    fake:['边缘有<strong>毛边</strong>','<strong>无扬声器网</strong>'],
+    imgs_gen:['image101.png'], imgs_fake:['image102.png'] },
+
+  { cat:'🎧 AirPods', id:'ap-ear-detail', title:'🎧 耳机外观细节', slides:[21,22],
+    genuine:['AirPods Pro 耳塞正常有<strong>开孔</strong>','耳机柄边缘做工<strong>精细</strong>，手指划过顺畅','底部边缘接缝<strong>一条</strong>','耳塞做工精细<strong>无毛边</strong>'],
+    fake:['耳塞<strong>没有开孔</strong>','耳机柄做工<strong>粗糙</strong>，手指划过有<strong>割手感</strong>','底部边缘有<strong>两条接缝</strong>','耳塞做工粗糙有<strong>毛边</strong>'],
+    imgs_gen:['image103.png','image104.png','image107.png'],
+    imgs_fake:['image105.jpeg','image106.jpeg','image108.png'] },
+
+  { cat:'🎧 AirPods', id:'ap-box', title:'📦 包装', slides:[23,24],
+    genuine:['充电盒上方耳机轮廓<strong>清晰且有明显凸起纹路</strong>','侧边贴纸字体清晰、印刷工整','包装盒贴纸规整，字体大小一致','打开有<strong>阻尼感</strong>（与iPhone原包装相似）'],
+    fake:['充电盒上方耳机轮廓<strong>模糊、无明显凸起纹路</strong>','侧边贴纸印刷不清晰','字体粗细不一致、标签样式不对'],
+    imgs_gen:['image109.png','image110.png','image111.png'],
+    imgs_fake:['image112.png','image113.png','image114.png','image115.png','image116.png','image117.png','image118.png'] },
+
+  { cat:'🎧 AirPods', id:'ap-popup', title:'📲 连接弹窗', slides:[25],
+    genuine:['连接弹窗正常，无异常提示'],
+    fake:['连接时出现<strong>"无法验证"</strong>弹窗','关于本机显示<strong>"无法验证这些耳机为正品的 AirPods"</strong>'],
+    imgs_gen:['image119.png'], imgs_fake:['image120.png','image121.png'] },
+
+  { cat:'🎧 AirPods', id:'ap-name', title:'✏️ 设备名称修改', slides:[26],
+    genuine:['可以<strong>更改设备名称</strong>'],
+    fake:['部分<strong>无法修改设备名称</strong>'],
+    imgs_gen:['image122.png','image123.png'], imgs_fake:['image124.png'] },
+
+  { cat:'🎧 AirPods', id:'ap-sn', title:'🔢 序列号验证', slides:[27,28],
+    genuine:['配对后可查看充电盒、左耳、右耳序列号','左耳小型号与系统型号一致','左/右耳机序列号与系统L/R序列号一致','充电仓序列号和系统序列号一致','苹果官网可查询到信息'],
+    fake:['部分序列号是<strong>"1"</strong>','无法通过苹果官网查询到信息','序列号不一致'],
+    imgs_gen:['image125.png','image127.png','image128.png','image129.png','image130.png','image131.png','image132.png'],
+    imgs_fake:['image126.png','image124.png'] },
+
+  { cat:'🎧 AirPods', id:'ap-ear-detect', title:'👂 入耳检测功能', slides:[29],
+    genuine:['按住传感器时检测到已佩戴','松开后播放的音乐<strong>自动暂停</strong>','分别尝试戴上/按住传感器均可检测'],
+    fake:['部分<strong>无入耳检测</strong>功能','或仅一侧耳机有入耳检测'],
+    note:'⚠ AirPods 3代不使用该方法检测',
+    imgs_gen:['image133.png','image134.png'], imgs_fake:['image135.png'] },
+
+  { cat:'🎧 AirPods', id:'ap-anc', title:'🔇 降噪功能', slides:[30],
+    genuine:['有出色的<strong>降噪效果</strong>，基本隔绝外界声音'], fake:['部分<strong>无降噪效果</strong>或效果较差','开启降噪后依然能明显听到外界声','有时会断续'],
+    tag:'适用 Pro / Max / 4(降噪版)',
+    imgs_gen:['image136.png','image137.png'], imgs_fake:['image138.png'] },
+
+  { cat:'🎧 AirPods', id:'ap-sound', title:'🔊 声音辨别', slides:[31],
+    genuine:['播放音乐时抵住一侧传感器→被挡住的耳机<strong>低音效果消失</strong>'], fake:['抵住传感器后不出现低音消失现象'],
+    tag:'适用 AirPods 1/2代',
+    imgs_gen:['image133.png'] },
+
+  // === AirPods Max ===
+  { cat:'🎧 AirPods Max', id:'max-antenna', title:'📡 天线信号条', slides:[33],
+    genuine:['左耳<strong>有天线信号条</strong>'], fake:['<strong>无天线信号条</strong>'],
+    imgs_gen:['image139.png'], imgs_fake:['image140.png'] },
+
+  { cat:'🎧 AirPods Max', id:'max-shell', title:'🏗️ 外壳材质', slides:[34],
+    genuine:['外壳为<strong>金属</strong>','耳机外壳<strong>无接缝</strong>'], fake:['多为<strong>塑料</strong>外壳','耳机外壳<strong>有接缝</strong>'],
+    imgs_gen:['image141.png'], imgs_fake:['image142.png'] },
+
+  { cat:'🎧 AirPods Max', id:'max-earshell', title:'🔄 耳罩外壳（充电口 & 旋钮周边）', slides:[35],
+    genuine:['充电口和旋转按钮周边是<strong>平整</strong>的'], fake:['充电口和旋转按钮周边<strong>有弧边</strong>（类似苹果手机静音键）'],
+    imgs_gen:['image144.png'], imgs_fake:['image143.jpeg'] },
+
+  { cat:'🎧 AirPods Max', id:'max-light', title:'💡 充电指示灯', slides:[36],
+    genuine:['充电指示灯<strong>发光均匀</strong>'], fake:['充电指示灯<strong>残缺</strong>或<strong>发光不均匀</strong>'],
+    imgs_gen:['image145.jpeg'], imgs_fake:['image146.png'] },
+
+  { cat:'🎧 AirPods Max', id:'max-headband', title:'🎯 头梁外观 & 伸缩杆', slides:[37,38],
+    genuine:['穹网<strong>很细密</strong>','框架身基本<strong>捏不动</strong>','拉杆合上仅<strong>2mm</strong>'],
+    fake:['穹网<strong>网孔很大</strong>','产品很<strong>软容易捏动</strong>','拉杆合上有<strong>5mm</strong>'],
+    imgs_gen:['image147.png','image149.png'], imgs_fake:['image148.png','image150.png'] },
+
+  { cat:'🎧 AirPods Max', id:'max-font', title:'✏️ 音腔内字体', slides:[39],
+    genuine:['字体<strong>清晰、间隙均匀</strong>','字体走向与音腔弧度一致'], fake:['字体<strong>模糊、掉漆</strong>','字体<strong>倾斜</strong>，走向与弧度不一致'],
+    imgs_gen:['image151.png'], imgs_fake:['image152.png','image153.png','image154.png'] },
+
+  { cat:'🎧 AirPods Max', id:'max-mic', title:'🎤 音腔麦克风', slides:[40],
+    genuine:['音腔内<strong>有麦克风</strong>','网纱<strong>孔较细</strong>'], fake:['音腔内<strong>无麦克风</strong>','网纱<strong>孔较粗</strong>'],
+    imgs_gen:['image155.png','image156.png'], imgs_fake:['image157.png','image158.png'] },
+
+  { cat:'🎧 AirPods Max', id:'max-sensor', title:'👁️ 光学传感器', slides:[41],
+    genuine:['传感器与音腔外壳基本<strong>持平</strong>'], fake:['传感器接口有<strong>凸起或凹陷</strong>（用手滑动有明显区别）'],
+    imgs_gen:['image159.png'], imgs_fake:['image160.png','image161.png','image162.png'] },
+
+  { cat:'🎧 AirPods Max', id:'max-disassemble', title:'🔩 头梁拆卸孔', slides:[42],
+    genuine:['取下磁吸耳套，内部有<strong>一个小孔</strong>','用卡针插入→头梁和耳机<strong>可拆分</strong>'], fake:['<strong>没有孔</strong>或孔是假的','<strong>无法拆分</strong>头梁和耳机'],
+    imgs_gen:['image163.png'], imgs_fake:['image164.png'] },
+
+  { cat:'🎧 AirPods Max', id:'max-screw', title:'🔩 螺丝', slides:[43],
+    genuine:['螺丝孔边缘<strong>无毛边</strong>','螺丝<strong>无凸起凹陷</strong>，与外壳持平'], fake:['螺丝边缘<strong>有毛边</strong>','螺丝<strong>凹陷</strong>'],
+    imgs_gen:['image165.png','image166.png'], imgs_fake:['image167.png','image168.png','image169.png'] },
+
+  { cat:'🎧 AirPods Max', id:'max-ear-sn', title:'🔢 耳塞背面序列号', slides:[44],
+    genuine:['耳塞背面<strong>有序列号</strong>','耳套一端有序列号，一端有英文"Designed by Apple..."'], fake:['耳塞背面<strong>没有序列号</strong>'],
+    imgs_gen:['image170.png'], imgs_fake:['image171.png','image172.png','image173.png'] },
+
+  { cat:'🎧 AirPods Max', id:'max-ring', title:'🔘 耳塞内侧胶圈', slides:[45],
+    genuine:['耳塞内侧孔<strong>有胶圈环</strong>'], fake:['耳塞内侧孔<strong>无胶圈环</strong>'],
+    imgs_gen:['image174.png'], imgs_fake:['image175.jpeg','image176.png'] },
+
+  { cat:'🎧 AirPods Max', id:'max-glue', title:'🩹 耳垫溢胶', slides:[46],
+    genuine:['耳垫塑料框与网纱边缘<strong>无溢胶</strong>'], fake:['耳垫塑料框与网纱四周有<strong>明显溢胶</strong>'],
+    imgs_gen:['image177.png'], imgs_fake:['image178.png'] },
+
+  { cat:'🎧 AirPods Max', id:'max-anc', title:'🔇 降噪功能', slides:[47],
+    genuine:['设置→蓝牙→AirPods Max→噪声控制','或控制中心长按音量条切换','有<strong>明显降噪效果</strong>'], fake:['<strong>无降噪效果</strong>'],
+    imgs_gen:['image136.png','image179.png'] },
+
+  // === 其他品牌 ===
+  { cat:'🎧 其他品牌', id:'beats-all', title:'🎵 Beats 通用辨别', slides:[50],
+    genuine:['Beats属苹果旗下品牌，辨别方法<strong>参考苹果耳机</strong>','序列号可在苹果官网查询','重点查看：序列号、灯珠、按键、做工细节'],
+    fake:['参考苹果耳机山寨特征'], imgs_gen:['image180.png','image181.png','image182.png'] },
+
+  { cat:'🎧 其他品牌', id:'beats-studio', title:'🎵 Beats Studio Buds', slides:[51,52],
+    genuine:['指示灯<strong>圆润透亮</strong>','充电盒内刻字：丝印规整、颜色较浅','充电盒背面缝隙<strong>清晰均匀</strong>','充电盒触点<strong>下陷</strong>，转轴较宽','防尘网是<strong>滤网</strong>','耳机触点<strong>较宽无缝隙</strong>，丝印清晰较浅'],
+    fake:['指示灯<strong>较暗</strong>','内刻字：丝印较深、字体偏细','背面缝隙不均，边角有毛边','充电盒触点<strong>凸起</strong>，转轴较窄','防尘网为<strong>金属材质</strong>','耳机触点较小凹陷有缝隙，丝印较深有变形'],
+    imgs_gen:['image183.png','image185.png','image187.png','image189.png','image191.png'],
+    imgs_fake:['image184.png','image186.png','image188.png','image190.png','image192.png'] },
+
+  { cat:'🎧 其他品牌', id:'beats-fit', title:'🎵 Beats Fit Pro', slides:[53,54],
+    genuine:['指示灯开孔<strong>圆润</strong>','内刻字：丝印规整、颜色较浅','充电盒触点为<strong>银色</strong>','防尘网是<strong>滤网</strong>','耳机触点为<strong>银色</strong>，与机身平齐','机身丝印清晰、颜色较浅'],
+    fake:['指示灯开孔<strong>变形较扁</strong>','内刻字：丝印较深、偏细或缺失','充电盒触点为<strong>金色</strong>','防尘网为<strong>金属材质</strong>','耳机触点为<strong>金色</strong>，触点凹陷','刻字位置样式不一致，字体变形，L&amp;R缺失'],
+    imgs_gen:['image193.png','image195.png','image197.png','image199.png','image201.png','image203.png'],
+    imgs_fake:['image194.png','image196.png','image198.png','image200.png','image202.png','image204.png','image205.png','image206.png'] },
+
+  { cat:'🎧 其他品牌', id:'beats-power', title:'🎵 Beats Powerbeats Pro', slides:[55],
+    genuine:['材质是<strong>亮面</strong>','充电接口与外壳<strong>平齐无缝隙凹陷</strong>','内部丝印刻字<strong>清晰规整</strong>，充电盒型号：<strong>2078</strong>'],
+    fake:['<strong>哑光面</strong>','接口处有<strong>明显缝隙凹陷</strong>','丝印字体模糊；偏细偏深；符号变形；缺少空格间隙和冒号'],
+    imgs_gen:['image207.png','image209.png','image211.png'],
+    imgs_fake:['image208.png','image210.png','image212.png'] },
+
+  { cat:'🎧 其他品牌', id:'samsung', title:'📱 三星 Galaxy Buds2 Pro', slides:[56],
+    genuine:['充电仓字体<strong>清晰规整</strong>，似雕刻凹陷有纹路','缓冲为<strong>橡胶材质</strong>，有明显回弹效果','指示灯<strong>发光均匀</strong>','充电盒内字体印刷清晰，质感较好'],
+    fake:['充电仓字体模糊，印刷似复印','缓冲为<strong>一体模具合成塑料</strong>，无回弹','灯光扩散，发光不均匀，灯珠偏移','内字体印刷模糊，质感较差'],
+    imgs_gen:['image213.png','image215.png'],
+    imgs_fake:['image214.png','image216.png'] }
+];
+
+// --- Render ---
+function buildAll() {
+  let navHtml = '';
+  let contentHtml = '';
+  let currentCat = '';
+
+  TOPICS.forEach((t, idx) => {
+    // Category header
+    if (t.cat !== currentCat) {
+      currentCat = t.cat;
+      navHtml += `<div class="cat">${currentCat}</div>`;
+      contentHtml += `<div class="section-title" id="sec-${idx}">${currentCat}</div>`;
+    }
+    navHtml += `<a href="#item-${idx}" onclick="document.getElementById('item-${idx}').scrollIntoView({behavior:'smooth'})">${t.title.replace(/[^一-龥a-zA-Z0-9\s]/g,'')}</a>`;
+
+    contentHtml += `<div class="compare-card" id="item-${idx}">`;
+    contentHtml += `<div class="card-title">${t.title} ${t.tag ? `<span class="tag tag-red">${t.tag}</span>` : ''}</div>`;
+    if (t.note) contentHtml += `<div style="padding:6px 18px;font-size:12px;color:var(--text3);background:#f9f9fb">${t.note}</div>`;
+
+    contentHtml += `<div class="compare-body">`;
+
+    // Genuine column
+    contentHtml += `<div class="compare-col genuine"><h4 style="color:#1B5E20">✅ 正品特征</h4><ul>`;
+    t.genuine.forEach(g => contentHtml += `<li>• ${g}</li>`);
+    contentHtml += `</ul>`;
+    if (t.imgs_gen && t.imgs_gen.length) {
+      contentHtml += `<div class="img-stack">`;
+      t.imgs_gen.forEach(img => contentHtml += `<div><img src="${IMG}/${img}" loading="lazy" onerror="this.style.display='none';this.parentElement.insertAdjacentHTML('beforeend','<div class=\\'img-placeholder\\' style=\\'width:100%;max-width:200px\\'><span>🖼️</span>图片待补充</div>')" onclick="event.stopPropagation();openLightbox('${IMG}/${img}')" alt="正品"><div class="img-label">正品</div></div>`);
+      contentHtml += `</div>`;
+    }
+    contentHtml += `</div>`;
+
+    // Fake column
+    contentHtml += `<div class="compare-col fake"><h4 style="color:#C62828">❌ 山寨特征</h4><ul>`;
+    t.fake.forEach(f => contentHtml += `<li>• ${f}</li>`);
+    contentHtml += `</ul>`;
+    if (t.imgs_fake && t.imgs_fake.length) {
+      contentHtml += `<div class="img-stack">`;
+      t.imgs_fake.forEach(img => contentHtml += `<div><img src="${IMG}/${img}" loading="lazy" onerror="this.style.display='none';this.parentElement.insertAdjacentHTML('beforeend','<div class=\\'img-placeholder\\' style=\\'width:100%;max-width:200px\\'><span>🖼️</span>图片待补充</div>')" onclick="event.stopPropagation();openLightbox('${IMG}/${img}')" alt="山寨"><div class="img-label">山寨</div></div>`);
+      contentHtml += `</div>`;
+    }
+    contentHtml += `</div>`;
+
+    contentHtml += `</div></div>`;
+  });
+
+  document.getElementById('sidebar').innerHTML = navHtml;
+  document.getElementById('content').innerHTML = contentHtml;
+}
+
+// --- Lightbox ---
+function openLightbox(src) {
+  document.getElementById('lightboxImg').src = src;
+  document.getElementById('lightbox').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('show');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+// --- Search ---
+function filterCards() {
+  const q = document.getElementById('searchBox').value.toLowerCase();
+  document.querySelectorAll('.compare-card, .section-title').forEach(el => {
+    if (!q) { el.style.display = ''; return; }
+    if (el.classList.contains('section-title')) {
+      const parent = el.parentElement;
+      const nextCards = parent.querySelectorAll('.compare-card');
+      let vis = false;
+      let sibling = el.nextElementSibling;
+      while (sibling && sibling.classList.contains('compare-card')) {
+        if (sibling.textContent.toLowerCase().includes(q)) vis = true;
+        sibling = sibling.nextElementSibling;
+      }
+      el.style.display = vis ? '' : 'none';
+    } else if (el.classList.contains('compare-card')) {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    }
+  });
+}
+
+// --- Scroll spy ---
+window.addEventListener('scroll', () => {
+  const links = document.querySelectorAll('.sidebar a');
+  let current = '';
+  document.querySelectorAll('.compare-card').forEach(card => {
+    if (card.getBoundingClientRect().top < 200) current = card.id;
+  });
+  links.forEach(a => a.classList.remove('active'));
+  if (current) {
+    const match = [...links].find(a => a.getAttribute('href') === '#' + current);
+    if (match) match.classList.add('active');
+  }
+});
+
+buildAll();
+</script>
+</body>
+</html>
